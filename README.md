@@ -9,10 +9,31 @@ A transparent and verifiable platform for tracking disaster relief aid from dono
 ## Setup
 
 Create a `.env` file:
+
 ```
 VITE_CONTRACT_ADDRESS=0x... # Your deployed AidAuditor contract address
 VITE_CHAIN_ID=11155111 # Sepolia testnet
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_... # From Clerk Dashboard
 ```
+
+Then install dependencies and run the app:
+
+```
+npm install
+npm run dev
+```
+
+### Auth quick start (Clerk)
+
+- Add your domain to Allowed Origins in Clerk.
+- Set the `VITE_CLERK_PUBLISHABLE_KEY` env var.
+- Visit `/sign-up` to create an account.
+- After sign-up, you will be redirected to `/onboarding` to pick a role. The role is saved to `user.publicMetadata.role` and protected routes will redirect you to onboarding until a role exists.
+
+OAuth notes
+
+- Enable Google in Clerk dashboard and add allowed origins for local dev (e.g., `http://localhost:5173`).
+- Add `http://localhost:5173/sso-callback` as an allowed redirect URL in Clerk.
 
 ## How can I edit this code?
 
