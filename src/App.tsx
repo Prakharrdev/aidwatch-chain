@@ -8,27 +8,54 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
 import NotFound from "./pages/NotFound";
+import SignUp from "./pages/auth/SignUp";
+import SignIn from "./pages/auth/SignIn";
+import Onboarding from "./pages/Onboarding";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <Web3Provider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/tracking" element={<Tracking />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </Web3Provider>
-  </QueryClientProvider>
+	<QueryClientProvider client={queryClient}>
+		<Web3Provider>
+			<TooltipProvider>
+				<Toaster />
+				<Sonner />
+				<BrowserRouter>
+					<Routes>
+						<Route path="/" element={<Index />} />
+						<Route path="/sign-up" element={<SignUp />} />
+						<Route path="/sign-in" element={<SignIn />} />
+						<Route
+							path="/onboarding"
+							element={
+								<ProtectedRoute>
+									<Onboarding />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/dashboard"
+							element={
+								<ProtectedRoute requireRole>
+									<Dashboard />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/tracking"
+							element={
+								<ProtectedRoute requireRole>
+									<Tracking />
+								</ProtectedRoute>
+							}
+						/>
+						<Route path="*" element={<NotFound />} />
+					</Routes>
+				</BrowserRouter>
+			</TooltipProvider>
+		</Web3Provider>
+	</QueryClientProvider>
 );
 
 export default App;
