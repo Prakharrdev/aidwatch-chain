@@ -3,43 +3,40 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, TrendingUp, Users, Package, ChevronRight, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { WalletButton } from "@/components/WalletButton";
+import { useWeb3 } from "@/contexts/Web3Context";
+import { useContractData } from "@/hooks/useContractData";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
-  const stats = [
-    { label: "Total Aid Packages", value: "1,247", icon: Package, trend: "+12.3%" },
-    { label: "Active Donors", value: "342", icon: Users, trend: "+8.1%" },
-    { label: "Verified Deliveries", value: "1,089", icon: CheckCircle2, trend: "+15.7%" },
-    { label: "Funds Distributed", value: "$2.4M", icon: TrendingUp, trend: "+23.4%" },
-  ];
+  const { isConnected } = useWeb3();
+  const { getPlatformStats } = useContractData();
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const recentTransactions = [
-    {
-      id: "TX-2024-001247",
-      donor: "Global Relief Fund",
-      amount: "$50,000",
-      beneficiary: "Flood Relief - Region 5",
-      status: "completed",
-      timestamp: "2 hours ago",
-      hash: "0x742d...a3f9",
-    },
-    {
-      id: "TX-2024-001246",
-      donor: "Healthcare Initiative",
-      amount: "$25,000",
-      beneficiary: "Medical Supplies - District 12",
-      status: "in-transit",
-      timestamp: "5 hours ago",
-      hash: "0x8a1c...b2e4",
-    },
-    {
-      id: "TX-2024-001245",
-      donor: "Education Fund",
-      amount: "$15,000",
-      beneficiary: "School Reconstruction - Zone 3",
-      status: "pending",
-      timestamp: "8 hours ago",
-      hash: "0x3f7d...c8a1",
-    },
+  useEffect(() => {
+    const loadStats = async () => {
+      if (isConnected) {
+        setLoading(true);
+        const data = await getPlatformStats();
+        setStats(data);
+        setLoading(false);
+      }
+    };
+    loadStats();
+  }, [isConnected]);
+
+  const displayStats = isConnected && stats ? [
+    { label: "Total Aid Packages", value: stats.totalAssets.toString(), icon: Package, change: "" },
+    { label: "Funds Allocated", value: `${parseFloat(stats.totalAllocated).toFixed(4)} ETH`, icon: TrendingUp, change: "" },
+    { label: "Funds Released", value: `${parseFloat(stats.totalReleased).toFixed(4)} ETH`, icon: CheckCircle2, change: "" },
+    { label: "Funds In Transit", value: `${parseFloat(stats.fundsInTransit).toFixed(4)} ETH`, icon: Clock, change: "" },
+  ] : [
+    { label: "Total Aid Packages", value: "---", icon: Package, change: "" },
+    { label: "Funds Allocated", value: "--- ETH", icon: TrendingUp, change: "" },
+    { label: "Funds Released", value: "--- ETH", icon: CheckCircle2, change: "" },
+    { label: "Funds In Transit", value: "--- ETH", icon: Clock, change: "" },
   ];
 
   const getStatusColor = (status: string) => {
@@ -88,9 +85,7 @@ const Dashboard = () => {
               <Link to="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition">
                 Verification
               </Link>
-              <Button variant="outline" size="sm">
-                Connect Wallet
-              </Button>
+              <WalletButton />
             </nav>
           </div>
         </div>
@@ -98,9 +93,22 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Connection Notice */}
+        {!isConnected && (
+          <Card className="p-6 mb-8 bg-warning/10 border-warning/50">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-warning" />
+              <div>
+                <h3 className="font-semibold text-foreground">Connect Your Wallet</h3>
+                <p className="text-sm text-muted-foreground">Connect your wallet to view real-time blockchain data and interact with the platform.</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => {
+          {displayStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <Card key={index} className="p-6 hover:shadow-lg transition-all animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
@@ -108,64 +116,57 @@ const Dashboard = () => {
                   <div className="p-3 bg-primary/10 rounded-lg">
                     <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <Badge variant="outline" className="text-success border-success/50">
-                    {stat.trend}
-                  </Badge>
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-1">{stat.value}</h3>
+                {loading && isConnected ? (
+                  <Skeleton className="h-8 w-24 mb-1" />
+                ) : (
+                  <h3 className="text-3xl font-bold text-foreground mb-1">{stat.value}</h3>
+                )}
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </Card>
             );
           })}
         </div>
 
-        {/* Recent Transactions */}
+        {/* Recent Transactions Info */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-1">Recent Blockchain Transactions</h2>
-              <p className="text-sm text-muted-foreground">Real-time verified aid distribution on the blockchain</p>
+              <h2 className="text-2xl font-bold text-foreground mb-1">Blockchain Transactions</h2>
+              <p className="text-sm text-muted-foreground">
+                {isConnected 
+                  ? "Real-time verified aid distribution on the blockchain" 
+                  : "Connect wallet to view transaction history"}
+              </p>
             </div>
-            <Button variant="outline">
-              View All
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
+            <Link to="/tracking">
+              <Button variant="outline">
+                Track Assets
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="space-y-4">
-            {recentTransactions.map((tx, index) => (
-              <div
-                key={tx.id}
-                className="p-5 border border-border rounded-lg hover:border-primary/50 hover:shadow-md transition-all animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge variant={getStatusColor(tx.status) as any} className="flex items-center gap-1">
-                        {getStatusIcon(tx.status)}
-                        {tx.status}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground font-mono">{tx.hash}</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-1">{tx.donor}</h3>
-                    <p className="text-sm text-muted-foreground">{tx.beneficiary}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary mb-1">{tx.amount}</p>
-                    <p className="text-xs text-muted-foreground">{tx.timestamp}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <span className="text-xs text-muted-foreground">Transaction ID: {tx.id}</span>
-                  <Button variant="link" size="sm" className="h-auto p-0">
-                    View Details
-                    <ChevronRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          {!isConnected ? (
+            <div className="text-center py-12">
+              <Package className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-muted-foreground">Connect your wallet to view your transactions and track assets</p>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" />
+              <p className="text-foreground font-semibold mb-2">Wallet Connected</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                All transactions are recorded on the blockchain with complete transparency
+              </p>
+              <Link to="/tracking">
+                <Button variant="hero">
+                  View Asset Tracking
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </Card>
 
         {/* Blockchain Verification Banner */}

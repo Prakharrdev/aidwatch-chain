@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, TrendingUp, Lock, Eye, Zap, CheckCircle2, Users, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { WalletButton } from "@/components/WalletButton";
 
 const Index = () => {
   const features = [
@@ -55,9 +56,7 @@ const Index = () => {
               <Link to="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition">
                 Features
               </Link>
-              <Button variant="hero" size="sm">
-                Get Started
-              </Button>
+              <WalletButton />
             </nav>
           </div>
         </div>

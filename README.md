@@ -1,8 +1,18 @@
-# Welcome to your Lovable project
+# AidChain - Blockchain-Powered Disaster Aid Auditing Platform
+
+A transparent and verifiable platform for tracking disaster relief aid from donors to beneficiaries using blockchain technology and smart contracts.
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/76c3ab25-5075-4595-aabf-0b7c202dd245
+
+## Setup
+
+Create a `.env` file:
+```
+VITE_CONTRACT_ADDRESS=0x... # Your deployed AidAuditor contract address
+VITE_CHAIN_ID=11155111 # Sepolia testnet
+```
 
 ## How can I edit this code?
 
